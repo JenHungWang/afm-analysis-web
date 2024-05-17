@@ -5,6 +5,6 @@ pandas
 Pillow
 scikit_learn
 scipy
-skimage
+scikit-image
 ultralytics
 opencv-python
