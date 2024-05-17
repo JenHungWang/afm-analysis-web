@@ -1,0 +1,10 @@
+gradio
+matplotlib
+numpy
+pandas
+Pillow
+scikit_learn
+scipy
+skimage
+ultralytics
+opencv-python
