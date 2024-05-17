@@ -48,6 +48,7 @@ def predict_image(name, model, img, conf_threshold, iou_threshold):
     )
 
     cno_count = []
+    afm_image = []
     cno_image = []
     file_name = []
 
@@ -74,6 +75,7 @@ def predict_image(name, model, img, conf_threshold, iou_threshold):
             cno_coor[j] = [x, y]
             cv2.rectangle(result.orig_img, (x1, y1), (x2, y2), (0, 255, 0), 1)
         im_array = result.orig_img
+        afm_image.append([img[idx], file_label])
         cno_image.append([Image.fromarray(im_array[..., ::-1]), file_label])
         cno_count.append(cno)
         file_name.append(file_label)
@@ -115,10 +117,12 @@ def predict_image(name, model, img, conf_threshold, iou_threshold):
     # load data into a DataFrame object:
     cno_df = pd.DataFrame(data)
 
-    return cno_df, cno_image
+    return cno_df, afm_image, cno_image
+
 
 def highlight_max(s, props=''):
     return np.where(s == np.nanmax(s.values), props, '')
+
 
 def highlight_df(df, data: gr.SelectData):
 
@@ -140,10 +144,12 @@ def reset():
     conf_slider = 0.2
     iou_slider = 0.5
     analysis_results = []
+    afm_gallery = []
     cno_gallery = []
     test_label = ""
 
-    return name_textbox, gender_radio, age_slider, fitzpatrick, history, model_radio, input_files, conf_slider, iou_slider, analysis_results, cno_gallery, test_label
+    return name_textbox, gender_radio, age_slider, fitzpatrick, history, model_radio, input_files, conf_slider, \
+        iou_slider, analysis_results, afm_gallery, cno_gallery, test_label
 
 
 with gr.Blocks(title="AFM AI Analysis", theme="default") as app:
@@ -171,19 +177,26 @@ with gr.Blocks(title="AFM AI Analysis", theme="default") as app:
         with gr.Column():
             analysis_results = gr.Dataframe(headers=["Files", "CNO Count"], interactive=False)
             # cno_label = gr.Label(label="Analysis Results")
-            cno_gallery = gr.Gallery(label="Result", show_label=True, columns=3, object_fit="contain")
+            with gr.Tab("AFM"):
+                afm_gallery = gr.Gallery(label="Result", show_label=True, columns=3, object_fit="contain")
+            with gr.Tab("CNO"):
+                cno_gallery = gr.Gallery(label="Result", show_label=True, columns=3, object_fit="contain")
+            # with gr.Tab("KDE"):
+                # kde_gallery = gr.Gallery(label="Result", show_label=True, columns=3, object_fit="contain")
             test_label = gr.Label(label="Analysis Results")
             # cno_img = gr.Image(type="pil", label="Result")
 
     analyze_btn.click(
         fn=predict_image,
         inputs=[name_textbox, model_radio, input_files, conf_slider, iou_slider],
-        outputs=[analysis_results, cno_gallery]
+        outputs=[analysis_results, afm_gallery, cno_gallery]
     )
 
     clear_btn.click(reset, outputs=[name_textbox, gender_radio, age_slider, fitzpatrick, history, model_radio,
-                                    input_files, conf_slider, iou_slider, analysis_results, cno_gallery, test_label])
+                                    input_files, conf_slider, iou_slider, analysis_results, afm_gallery, cno_gallery,
+                                    test_label])
 
+    afm_gallery.select(highlight_df, inputs=analysis_results, outputs=[test_label, analysis_results])
     cno_gallery.select(highlight_df, inputs=analysis_results, outputs=[test_label, analysis_results])
 
 
@@ -207,4 +220,4 @@ iface = gr.Interface(
 
 if __name__ == '__main__':
     # iface.launch()
-    app.launch(share=True, auth=('user', 'admin'), auth_message="Enter your username and password")
+    app.launch(share=True, auth=[('jenhw', 'admin'), ('user', 'admin')], auth_message="Enter your username and password")
