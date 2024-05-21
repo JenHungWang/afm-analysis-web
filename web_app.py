@@ -107,7 +107,7 @@ def predict_image(name, model, img, conf_threshold, iou_threshold):
             file_name.append(file_label)
 
             ### ============================
-
+            """
             kde = KernelDensity(metric='euclidean', kernel='gaussian', algorithm='ball_tree')
 
             # Finding Optimal Bandwidth
@@ -162,7 +162,7 @@ def predict_image(name, model, img, conf_threshold, iou_threshold):
             total_layer_cno.append(single_layer_cno)
             total_layer_density.append(single_layer_density)
 
-            """
+            
             # Plot CNO Distribution
             plt.contourf(x, y, z, levels=levels, cmap=plt.cm.bone)
             plt.axis('off')
