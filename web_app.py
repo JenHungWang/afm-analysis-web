@@ -162,6 +162,7 @@ def predict_image(name, model, img, conf_threshold, iou_threshold):
             total_layer_cno.append(single_layer_cno)
             total_layer_density.append(single_layer_density)
 
+            """
             # Plot CNO Distribution
             plt.contourf(x, y, z, levels=levels, cmap=plt.cm.bone)
             plt.axis('off')
@@ -173,7 +174,7 @@ def predict_image(name, model, img, conf_threshold, iou_threshold):
             kde_image.append([plt.figure(), file_label])
             #plt.savefig(os.path.join(kde_dir, '{}_{}_{}_KDE.png'.format(file_list[idx], model_type, conf)),
             #            bbox_inches='tight', pad_inches=0)
-
+            """
 
 
 
