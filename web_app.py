@@ -305,4 +305,5 @@ iface = gr.Interface(
 
 if __name__ == '__main__':
     # iface.launch()
-    app.launch(share=True, auth=[('jenhw', 'admin'), ('user', 'admin')], auth_message="Enter your username and password")
+    # app.launch(share=True, auth=[('jenhw', 'admin'), ('user', 'admin')], auth_message="Enter your username and password")
+    app.launch(share=True)
