@@ -1,5 +1,6 @@
 import os
 import cv2
+import io
 import pandas as pd
 import PIL.Image as Image
 import gradio as gr
@@ -107,7 +108,7 @@ def predict_image(name, model, img, conf_threshold, iou_threshold):
             file_name.append(file_label)
 
             ### ============================
-            """
+
             kde = KernelDensity(metric='euclidean', kernel='gaussian', algorithm='ball_tree')
 
             # Finding Optimal Bandwidth
@@ -124,7 +125,8 @@ def predict_image(name, model, img, conf_threshold, iou_threshold):
                                                                                                       (tf - ti)))
             kde.bandwidth = bw
             _ = kde.fit(cno_coor)
-
+            print("deb", result.orig_img.shape[1])
+            print("deb", result.orig_img.shape[0])
             xgrid = np.arange(0, result.orig_img.shape[1], 1)
             ygrid = np.arange(0, result.orig_img.shape[0], 1)
             xv, yv = np.meshgrid(xgrid, ygrid)
@@ -152,7 +154,7 @@ def predict_image(name, model, img, conf_threshold, iou_threshold):
                 if layer_area == 0:
                     density = np.round(0.0, 4)
                 else:
-                    density = np.round((ecno / layer_area) * 512 * 512 / 400, 4)
+                    density = np.round((ecno / layer_area) * result.orig_img.shape[0] * result.orig_img.shape[1] / 400, 4)
                 print("Level {}: Area={}, CNO={}, density={}".format(j, layer_area, ecno, density))
                 single_layer_area.append(layer_area)
                 single_layer_cno.append(ecno)
@@ -171,20 +173,24 @@ def predict_image(name, model, img, conf_threshold, iou_threshold):
             plt.gca().invert_yaxis()
             plt.xlim(0, gdim[1] - 1)
             plt.ylim(gdim[0] - 1, 0)
-            kde_image.append([plt.figure(), file_label])
+            plt.plot()
+            # plt.show()
+
+            # plt.savefig("test.png", format='png', bbox_inches='tight', pad_inches=0)
+            # plt.figure()
+            # plt.plot([1, 2])
+            img_buf = io.BytesIO()
+            plt.savefig(img_buf, format='png', bbox_inches='tight', pad_inches=0)
+            kde_im = Image.open(img_buf)
+            # kde_im.show()
+
+            # kde_img = Image.frombytes('RGB', fig.canvas.get_width_height(), fig.canvas.tostring_rgb())
+            # kde_image.append([imgplot, file_label])
+            kde_image.append([kde_im, file_label])
             #plt.savefig(os.path.join(kde_dir, '{}_{}_{}_KDE.png'.format(file_list[idx], model_type, conf)),
             #            bbox_inches='tight', pad_inches=0)
-            """
 
-
-
-
-
-
-
-
-
-
+            #img_buf.close()
         ### ============================
 
     data = {
@@ -306,5 +312,6 @@ iface = gr.Interface(
 
 if __name__ == '__main__':
     # iface.launch()
-    app.launch(share=False, auth=[('jenhw', 'admin'), ('user', 'admin')], auth_message="Enter your username and password")
-    # app.launch(share=True)
+    # app.launch(share=False, auth=[('jenhw', 'admin'), ('user', 'admin')],
+    #            auth_message="Enter your username and password")
+    app.launch(share=False)
