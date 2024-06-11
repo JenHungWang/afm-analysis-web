@@ -320,4 +320,5 @@ if __name__ == '__main__':
     # iface.launch()
     # app.launch(share=False, auth=[('jenhw', 'admin'), ('user', 'admin')],
     #            auth_message="Enter your username and password")
-    app.launch(share=False)
+    # app.launch(share=False)
+    app.launch(server_name="0.0.0.0")
