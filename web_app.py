@@ -20,6 +20,8 @@ DETECTION_MODEL_m = os.path.join(DIR_NAME, 'models', 'YOLOv8-M_CNO_Detection.pt'
 DETECTION_MODEL_l = os.path.join(DIR_NAME, 'models', 'YOLOv8-L_CNO_Detection.pt')
 DETECTION_MODEL_x = os.path.join(DIR_NAME, 'models', 'YOLOv8-X_CNO_Detection.pt')
 
+print("debug: ", DETECTION_MODEL_m)
+
 # MODEL = os.path.join(DIR_NAME, 'models', 'YOLOv8-M_CNO_Detection.pt')
 # model = YOLO(MODEL)
 # cno_df = pd.DataFrame()
@@ -321,4 +323,6 @@ if __name__ == '__main__':
     # app.launch(share=False, auth=[('jenhw', 'admin'), ('user', 'admin')],
     #            auth_message="Enter your username and password")
     # app.launch(share=False)
-    app.launch(server_name="0.0.0.0")
+    # app.launch(server_name="0.0.0.0")
+    app.launch(server_name="0.0.0.0", auth=[('jenhw', 'admin'), ('user', 'admin')],
+               auth_message="Enter your username and password")
