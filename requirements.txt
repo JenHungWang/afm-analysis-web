@@ -2,8 +2,8 @@ gradio
 matplotlib
 numpy
 pandas
-Pillow
-scikit_learn
+pillow
+scikit-learn
 scipy
 scikit-image
 ultralytics
