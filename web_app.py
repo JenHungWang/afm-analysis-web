@@ -29,6 +29,7 @@ DETECTION_MODEL_x = os.path.join(DIR_NAME, 'models', 'YOLOv8-X_CNO_Detection.pt'
 
 def predict_image(name, img_h, img_w, model, img, conf_threshold, iou_threshold):
     """Predicts and plots labeled objects in an image using YOLOv8 model with adjustable confidence and IOU thresholds."""
+    print("Analyzing")
     gr.Info("Starting process")
     # gr.Warning("Name is empty")
     if name == "":
@@ -329,5 +330,5 @@ if __name__ == '__main__':
     # app.launch(share=False)
     # app.launch(server_name="0.0.0.0")
     app.queue(max_size=10)
-    app.launch(share=True, server_name="0.0.0.0", auth=[('jenhw', 'admin'), ('user', 'admin')],
+    app.launch(server_name="0.0.0.0", auth=[('jenhw', 'admin'), ('user', 'admin')],
                auth_message="Enter your username and password")
