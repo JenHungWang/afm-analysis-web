@@ -34,7 +34,7 @@ def predict_image(name, img_h, img_w, model, img, conf_threshold, iou_threshold)
     # gr.Warning("Name is empty")
     if name == "":
         gr.Warning("Name is empty")
-
+    print("Model: ", model)
     if model == 'YOLOv8-N':
         CNO_model = YOLO(DETECTION_MODEL_n)
     elif model == 'YOLOv8-S':
