@@ -45,7 +45,7 @@ def predict_image(name, img_h, img_w, model, img, conf_threshold, iou_threshold)
         CNO_model = YOLO(DETECTION_MODEL_l)
     else:
         CNO_model = YOLO(DETECTION_MODEL_x)
-
+    print("Deb")
     results = CNO_model.predict(
         source=img,
         conf=conf_threshold,
@@ -55,7 +55,7 @@ def predict_image(name, img_h, img_w, model, img, conf_threshold, iou_threshold)
         imgsz=512,
         max_det=1200
     )
-
+    print("Deb")
     cno_count = []
     cno_col = []
     afm_image = []
@@ -69,7 +69,7 @@ def predict_image(name, img_h, img_w, model, img, conf_threshold, iou_threshold)
     # total_layer_density = []
     # avg_area_col = []
     # total_area_col = []
-
+    print("Deb")
     for idx, result in enumerate(results):
         cno = len(result.boxes)
 
