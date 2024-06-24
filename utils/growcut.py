@@ -6,7 +6,7 @@ from matplotlib.widgets import MultiCursor
 from scipy import ndimage
 from matplotlib import cm
 from PIL import Image, ImageDraw, ImageFont
-from skimage import morphology
+from skimage import morphology, io
 from skimage.measure import regionprops
 
 
@@ -142,7 +142,7 @@ def filter_objects(lab2, max_eccentricity=0.93, min_size=10, max_size=200, min_c
         b[lab2 == i] = lev
     return b
 
-
+"""
 def present(im, land, b):
     original_im = cm.afmhot(im)[:, :, :3]
     # Contrast Level 0.5
@@ -177,30 +177,42 @@ def present(im, land, b):
     out = Image.alpha_composite(base, txt)
 
     return out, original_im, enhanced_im, ct
+"""
 
+def present(im, land):
+    original_im = cm.afmhot(im)[:, :, :3]
+    resim = 0.5 * land + (1 - 0.5) * im
+    enhanced_im = cm.afmhot(resim)[:, :, :3]
+    original_im = Image.fromarray((original_im * 255).astype(np.uint8))
+    enhanced_im = Image.fromarray((enhanced_im * 255).astype(np.uint8))
 
-def treat_one_image(fn, growcut_path, original_png_path, enhanced_png_path):
+    return original_im, enhanced_im
+
+def treat_one_image(fn, original_png_path, enhanced_png_path):
 
     file_list = []
     growcut_list = []
 
     # load data
-    im = load_im(fn)
+    # im = load_im(fn)
+    im = io.imread(fn, as_gray=True)
 
     # pyramid contrast
     land = pyramid_contrast(im)
 
     # detect objects
-    lab2 = segmentate(land, alpha=.75, beta=0.7)
+    # lab2 = segmentate(land, alpha=.75, beta=0.7)
 
     # visualize
-    b = filter_objects(lab2, max_eccentricity=0.967, min_size=30, max_size=200, min_convex_coverage=0.5)
-    growcut_im, original_im, enhanced_im, ct = present(im, land, b)
+    # b = filter_objects(lab2, max_eccentricity=0.967, min_size=30, max_size=200, min_convex_coverage=0.5)
+    # growcut_im, original_im, enhanced_im, ct = present(im, land, b)
 
-    file_name = os.path.split(fn)[1][0:-10]
+    original_im, enhanced_im = present(im, land)
+
+    file_name = os.path.split(fn)[1][0:-4]
 
     original_im.save(os.path.join(original_png_path, file_name) + '.png')
     enhanced_im.save(os.path.join(enhanced_png_path, file_name) + '.png')
-    growcut_im.save(os.path.join(growcut_path, file_name) + '.png')
+    # growcut_im.save(os.path.join(growcut_path, file_name) + '.png')
 
-    return file_name, ct
+    return file_name

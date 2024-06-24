@@ -12,6 +12,7 @@ from sklearn.neighbors import KernelDensity
 from pathlib import Path
 from ultralytics import ASSETS, YOLO
 from sklearn.model_selection import GridSearchCV
+from utils.growcut import treat_one_image
 
 DIR_NAME = Path(os.path.dirname(__file__))
 DETECTION_MODEL_n = os.path.join(DIR_NAME, 'models', 'YOLOv8-N_CNO_Detection.pt')
@@ -28,23 +29,49 @@ DETECTION_MODEL_x = os.path.join(DIR_NAME, 'models', 'YOLOv8-X_CNO_Detection.pt'
 def predict_image(name, img_h, img_w, model, img, conf_threshold, iou_threshold):
     """Predicts and plots labeled objects in an image using YOLOv8 model with adjustable confidence and IOU thresholds."""
     gr.Info("Starting process")
+
+    time_str = time.strftime("%Y%m%d-%H%M%S")
+    original_png_path = os.path.join(DIR_NAME, 'results', time_str, "Original")
+    enhanced_png_path = os.path.join(DIR_NAME, 'results', time_str, "Enhanced")
+    kde_png_path = os.path.join(DIR_NAME, 'results', time_str, "KDE")
+
+    os.makedirs(original_png_path, exist_ok=True)
+    os.makedirs(enhanced_png_path, exist_ok=True)
+    os.makedirs(kde_png_path, exist_ok=True)
+
+    # Image Enhancement
+    file_list = []
+    for i, fn in enumerate(img):
+        print("deb2: ", fn)
+        file = treat_one_image(fn, original_png_path, enhanced_png_path)
+        file_list.append(file)
+        # growcut_list.append(gc_CNO)
+        print(i, end=' ')
+
+
+
     # gr.Warning("Name is empty")
     if name == "":
         gr.Warning("Name is empty")
 
     if model == 'YOLOv8-N':
         CNO_model = YOLO(DETECTION_MODEL_n)
+        model_type = 'N'
     elif model == 'YOLOv8-S':
         CNO_model = YOLO(DETECTION_MODEL_s)
+        model_type = 'S'
     elif model == 'YOLOv8-M':
         CNO_model = YOLO(DETECTION_MODEL_m)
+        model_type = 'M'
     elif model == 'YOLOv8-L':
         CNO_model = YOLO(DETECTION_MODEL_l)
+        model_type = 'L'
     else:
         CNO_model = YOLO(DETECTION_MODEL_x)
-
+        model_type = 'X'
+    # print("deb3", file_list)
     results = CNO_model.predict(
-        source=img,
+        source=enhanced_png_path,
         conf=conf_threshold,
         iou=iou_threshold,
         show_labels=False,
@@ -70,7 +97,8 @@ def predict_image(name, img_h, img_w, model, img, conf_threshold, iou_threshold)
     for idx, result in enumerate(results):
         cno = len(result.boxes)
 
-        file_label = img[idx].split(os.sep)[-1]
+        file_label = img[idx].split(os.sep)[-1][0:-4]
+        # print("deb", file_label)
         # single_layer_area = []
         # single_layer_cno = []
         single_layer_density = []
@@ -102,12 +130,15 @@ def predict_image(name, img_h, img_w, model, img, conf_threshold, iou_threshold)
                 y2 = round(result.boxes.xyxy[j][3].item())
 
                 cno_coor[j] = [x, y]
-                cv2.rectangle(result.orig_img, (x1, y1), (x2, y2), (0, 255, 0), 1)
+                bbox_img = cv2.rectangle(result.orig_img, (x1, y1), (x2, y2), (0, 255, 0), 1)
             im_array = result.orig_img
             afm_image.append([img[idx], file_label])
             cno_image.append([Image.fromarray(im_array[..., ::-1]), file_label])
             cno_count.append(cno)
             file_name.append(file_label)
+
+            cv2.imwrite(os.path.join(kde_png_path, '{}_{}_{}_bbox.png'.format(file_label, model_type, conf_threshold)),
+                        bbox_img)
 
             ### ============================
 
@@ -178,18 +209,30 @@ def predict_image(name, img_h, img_w, model, img, conf_threshold, iou_threshold)
             plt.xlim(0, gdim[1] - 1)
             plt.ylim(gdim[0] - 1, 0)
             plt.plot()
-
+            plt.savefig(os.path.join(kde_png_path, '{}_{}_{}_KDE.png'.format(file_label, model_type, conf_threshold)),
+                        bbox_inches='tight', pad_inches=0)
             img_buf = io.BytesIO()
             plt.savefig(img_buf, format='png', bbox_inches='tight', pad_inches=0)
             kde_im = Image.open(img_buf)
             kde_image.append([kde_im, file_label])
+            plt.clf()
+
+            plt.scatter(cno_coor[:, 0], cno_coor[:, 1], s=10)
+            plt.xlim(0, gdim[1] - 1)
+            plt.ylim(0, gdim[0] - 1)
+            plt.axis('off')
+            plt.gcf().set_size_inches(8, 8)
+            plt.gcf().set_size_inches(8 * (gdim[1] / gdim[0]), 8)
+            plt.gca().invert_yaxis()
+            plt.savefig(os.path.join(kde_png_path, '{}_{}_{}_Spatial.png'.format(file_list[idx], model_type, conf_threshold)),
+                        bbox_inches='tight', pad_inches=0)
+            plt.clf()
 
     data = {
         "Files": file_name,
         "CNO Count": cno_count,
         "ECTI Score": ecti_score
     }
-
 
     # load data into a DataFrame object:
     cno_df = pd.DataFrame(data)
@@ -298,27 +341,9 @@ with gr.Blocks(title="AFM AI Analysis", theme="default") as app:
     cno_gallery.select(highlight_df, inputs=analysis_results, outputs=[test_label, analysis_results])
 
 
-"""
-iface = gr.Interface(
-    fn=predict_image,
-    inputs=[
-        gr.Textbox(label="User Name"),
-        gr.Radio(["YOLOv8-N", "YOLOv8-S", "YOLOv8-M", "YOLOv8-L", "YOLOv8-X"], value="YOLOv8-M"),
-        # gr.Image(type="filepath", label="Upload Image"),
-        gr.File(file_types=["image"], file_count="multiple", label="Upload Image"),
-        gr.Slider(minimum=0, maximum=1, value=0.2, label="Confidence threshold"),
-        gr.Slider(minimum=0, maximum=1, value=0.5, label="IoU threshold")
-    ],
-    outputs=[gr.Label(label="Analysis Results"), gr.Image(type="pil", label="Result")],
-    title="AFM AI Analysis",
-    description="Upload images for inference. The YOLOv8-M model is used by default.",
-    theme=gr.themes.Default()
-)
-"""
-
 if __name__ == '__main__':
     # iface.launch()
     # app.launch(share=False, auth=[('jenhw', 'admin'), ('user', 'admin')],
     #            auth_message="Enter your username and password")
-    # app.launch(share=False)
-    app.launch(server_name="0.0.0.0")
+    app.launch(share=False)
+    # app.launch(server_name="0.0.0.0")
