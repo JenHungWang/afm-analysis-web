@@ -179,6 +179,7 @@ def present(im, land, b):
     return out, original_im, enhanced_im, ct
 """
 
+
 def present(im, land):
     original_im = cm.afmhot(im)[:, :, :3]
     resim = 0.5 * land + (1 - 0.5) * im
@@ -188,6 +189,7 @@ def present(im, land):
 
     return original_im, enhanced_im
 
+
 def treat_one_image(fn, original_png_path, enhanced_png_path):
 
     file_list = []
@@ -195,6 +197,7 @@ def treat_one_image(fn, original_png_path, enhanced_png_path):
 
     # load data
     # im = load_im(fn)
+    # im = io.imread(fn)
     im = io.imread(fn, as_gray=True)
 
     # pyramid contrast
