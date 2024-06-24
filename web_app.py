@@ -224,7 +224,7 @@ def predict_image(name, img_h, img_w, model, img, conf_threshold, iou_threshold)
             plt.gcf().set_size_inches(8, 8)
             plt.gcf().set_size_inches(8 * (gdim[1] / gdim[0]), 8)
             plt.gca().invert_yaxis()
-            plt.savefig(os.path.join(kde_png_path, '{}_{}_{}_Spatial.png'.format(file_list[idx], model_type, conf_threshold)),
+            plt.savefig(os.path.join(kde_png_path, '{}_{}_{}_Spatial.png'.format(file_label, model_type, conf_threshold)),
                         bbox_inches='tight', pad_inches=0)
             plt.clf()
 
