@@ -20,8 +20,6 @@ DETECTION_MODEL_m = os.path.join(DIR_NAME, 'models', 'YOLOv8-M_CNO_Detection.pt'
 DETECTION_MODEL_l = os.path.join(DIR_NAME, 'models', 'YOLOv8-L_CNO_Detection.pt')
 DETECTION_MODEL_x = os.path.join(DIR_NAME, 'models', 'YOLOv8-X_CNO_Detection.pt')
 
-# print("debug: ", DETECTION_MODEL_m)
-
 # MODEL = os.path.join(DIR_NAME, 'models', 'YOLOv8-M_CNO_Detection.pt')
 # model = YOLO(MODEL)
 # cno_df = pd.DataFrame()
@@ -29,12 +27,11 @@ DETECTION_MODEL_x = os.path.join(DIR_NAME, 'models', 'YOLOv8-X_CNO_Detection.pt'
 
 def predict_image(name, img_h, img_w, model, img, conf_threshold, iou_threshold):
     """Predicts and plots labeled objects in an image using YOLOv8 model with adjustable confidence and IOU thresholds."""
-    print("Analyzing")
     gr.Info("Starting process")
     # gr.Warning("Name is empty")
     if name == "":
         gr.Warning("Name is empty")
-    print("Model: ", model)
+
     if model == 'YOLOv8-N':
         CNO_model = YOLO(DETECTION_MODEL_n)
     elif model == 'YOLOv8-S':
@@ -45,7 +42,7 @@ def predict_image(name, img_h, img_w, model, img, conf_threshold, iou_threshold)
         CNO_model = YOLO(DETECTION_MODEL_l)
     else:
         CNO_model = YOLO(DETECTION_MODEL_x)
-    print("Deb")
+
     results = CNO_model.predict(
         source=img,
         conf=conf_threshold,
@@ -55,7 +52,7 @@ def predict_image(name, img_h, img_w, model, img, conf_threshold, iou_threshold)
         imgsz=512,
         max_det=1200
     )
-    print("Deb")
+
     cno_count = []
     cno_col = []
     afm_image = []
@@ -69,7 +66,7 @@ def predict_image(name, img_h, img_w, model, img, conf_threshold, iou_threshold)
     # total_layer_density = []
     # avg_area_col = []
     # total_area_col = []
-    print("Deb")
+
     for idx, result in enumerate(results):
         cno = len(result.boxes)
 
@@ -223,7 +220,6 @@ def highlight_df(df, data: gr.SelectData):
 
 
 def reset():
-    print("App Reset")
     name_textbox = ""
     img_h = 20
     img_w = 20
@@ -288,9 +284,6 @@ with gr.Blocks(title="AFM AI Analysis", theme="default") as app:
             test_label = gr.Label(label="Analysis Results")
             # cno_img = gr.Image(type="pil", label="Result")
 
-    # app.unload(lambda: print("App Closed"))
-    app.unload(reset)
-
     analyze_btn.click(
         fn=predict_image,
         inputs=[name_textbox, img_h, img_w, model_radio, input_files, conf_slider, iou_slider],
@@ -328,7 +321,4 @@ if __name__ == '__main__':
     # app.launch(share=False, auth=[('jenhw', 'admin'), ('user', 'admin')],
     #            auth_message="Enter your username and password")
     # app.launch(share=False)
-    # app.launch(server_name="0.0.0.0")
-    app.queue(max_size=10)
-    app.launch(server_name="0.0.0.0", auth=[('jenhw', 'admin'), ('user', 'admin')],
-               auth_message="Enter your username and password")
+    app.launch(server_name="0.0.0.0")
